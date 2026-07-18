@@ -1,6 +1,6 @@
-# 비용 분석 레포트 — _unspecified
+# 비용 분석 레포트 — all-subscriptions
 
-> ⚠️ **관리그룹 미확인**: 원본 PDF에 관리그룹명·스코프 정보가 표기되지 않아 자동추출 불가함 → 규칙에 따라 `_unspecified`로 대체함.  
+> ⚠️ **관리그룹 미확인**: 원본 PDF에 관리그룹명·스코프 ID가 표기되지 않아 자동추출 불가함 → 필터가 전부 "모두(All)"인 전체 구독 범위 export이므로 스코프 라벨 `all-subscriptions`로 대체함.  
 > 모든 필터(Subscription·RegionName·Commitment discount·Service·Currency)가 "모두(All)"로 설정된 전체 범위 export임.
 
 | 항목 | 값 |
