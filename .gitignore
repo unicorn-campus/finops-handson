@@ -1,0 +1,14 @@
+# 대용량 예제 데이터셋 (GitHub 100MB 제한 초과 — repo 제외)
+admin/dataset-examples/EA-Cost-Actual.csv
+admin/dataset-examples/EA-Cost-Amortized.csv
+admin/dataset-examples/EA-Cost-FOCUS_1.0.csv
+admin/dataset-examples/EA-Cost-FOCUS_1.0-preview.csv
+admin/dataset-examples/EA-Prices.csv
+
+# 임시 파일
+.temp/
+*.tmp
+
+# OS 생성 파일
+.DS_Store
+Thumbs.db
