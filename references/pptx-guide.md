@@ -449,6 +449,7 @@ main().catch((e) => { console.error("❌ PPT 생성 실패:", e); process.exit(1
 | 6 | 폰트 | Pretendard 사용 | Calibri/Arial/맑은 고딕 금지 |
 | 7 | 컬러 팔레트 | 지정 HEX만 사용 (C.* 상수) | 임의 색상 금지 |
 | 8 | 페이지 헤더 | breadcrumb + 제목 + 언더라인 룰 | 전 슬라이드 일관 |
+| 8-1 | **거버넌스 메시지** | 제목 아래 핵심 주장 한 문장 존재 + **20pt Bold `#2B3242`** | **전 콘텐츠 슬라이드 필수 · 누락 시 불합격** |
 | 9 | Shape 참조 | `pptx.shapes.*` 사용 | `ShapeType` 직접 import 금지 |
 | 10 | 슬라이드 함수 | `async function createSlideXX` 패턴 | 동기 함수·인라인 작성 금지 |
 | 11 | 표 작성 | `slide.addTable()` + 헤더행 `#E2EEF9` | 셀 수동 그리기 금지 |
