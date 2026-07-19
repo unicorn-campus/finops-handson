@@ -69,7 +69,7 @@
 
 **액션:** 그룹화=None · 차트=세로 막대형(누적) · 세분성=월별
 
-![포인트1 총액·월별 추이](images/01.total-trend.png)
+![](images/2026-07-19-23-19-19.png)
 
 **관찰(월별 총비용, 근사):**
 | 월 | 비용(근사) |
@@ -97,7 +97,7 @@
 
 **액션:** 그룹화=Service name · 세분성=없음 · 차트=테이블 (24행)
 
-![포인트2 서비스별](images/02.services.png)
+![](images/2026-07-19-23-20-08.png)
 
 **관찰(서비스별 12개월 합계, 정렬):**
 | 서비스 | 12개월 합계 | 비중(≈, 분모 ₩7.89M) |
@@ -123,7 +123,7 @@
 
 **액션:** 그룹화=Resource group name · 세분성=없음 · 테이블 (155행)
 
-![포인트3 리소스그룹별](images/03.resource-groups.png)
+![](images/2026-07-19-23-20-35.png)
 
 **관찰(RG별 12개월 합계, 상위):**
 | RG | 12개월 합계 |
@@ -147,7 +147,7 @@
 
 **액션:** 그룹화=Resource type · 세분성=없음 · 테이블 (22행)
 
-![포인트4 리소스 유형별](images/04.resource-types.png)
+![](images/2026-07-19-23-21-07.png)
 *(이 포털 버전은 개별 리소스명 그룹화가 `Resource guid`(GUID)뿐이라 `Resource type`으로 대체)*
 
 **관찰(리소스 유형별 12개월 합계):**
@@ -176,8 +176,8 @@
 ### 포인트 5 — 리전 분포
 
 **액션:** 그룹화=Location · 세분성=없음 · 테이블 (19행)
+![](images/2026-07-19-23-21-31.png)  
 
-![포인트5 리전 분포](images/05.regions.png)
 
 **관찰(리전별 12개월 합계):**
 | 리전 | 12개월 합계 | 비중(≈) |
@@ -202,7 +202,7 @@
 
 **액션:** 그룹화=Tag → 키 `project` 선택 · 세분성=없음 · 테이블 (13행)
 
-![포인트6 태그(project)별](images/06.tags-project.png)
+![](images/2026-07-19-23-22-06.png)
 
 **태그 인벤토리 관찰:** 노출된 태그 키가 대부분 **시스템·플랫폼 자동생성**
 (`aml*`·`computetype`·`ms.inv.v0.*`·`nrms.nsp-extension`·`platformsettings.*`·`skipasmazsecpackautoconfig`·`defaultexperience`).
@@ -233,8 +233,8 @@
 ### 포인트 7 — 커버리지: 온디맨드 vs 약정
 
 **액션:** 그룹화=Pricing Model · 세분성=없음 · 테이블 (1행)
+![](images/2026-07-19-23-22-36.png)
 
-![포인트7 온디맨드 vs 약정](images/07.pricing-model.png)
 
 **관찰:**
 | Pricing Model | 12개월 합계 |
@@ -255,7 +255,7 @@
 
 **액션:** 그룹화=Service name · 세분성=월별 · 차트=세로 막대형(그룹화)
 
-![포인트8 월별×서비스 이상신호](images/08.monthly-by-service.png)
+![](images/2026-07-19-23-23-12.png)
 *(일별 세분성은 1년 범위에서 선택 불가 → 월별×서비스로 attribution. 필요 시 피크월로 기간을 좁히면 일별 가능)*
 
 **관찰(월별×서비스 정확값, 캡처한 월별 표 기준):**
@@ -275,8 +275,7 @@
 ### 포인트 9 — 최적화 권장(Advisor)
 
 **액션:** 좌측 `최적화 > 관리자 권장 사항`
-
-![포인트9 최적화(Advisor)](images/09.advisor.png)
+![](images/2026-07-19-23-23-50.png)  
 
 **관찰(라이브):**
 - 활성 비용 권장 **0건** — "선택한 구독 및 리소스에 대한 비용 권장을 모두 따르고 있습니다."
@@ -305,7 +304,11 @@
 | Performance(성능) | 100% | - |
 - `Score history`(월별)로 추이, `Score by category`로 약한 기둥 식별. **FinOps 관점은 Cost 카드에 집중.**
 
-**(b) Cost(비용) 권장 — FinOps 핵심 탭 (예시)**
+**(b) Cost(비용) 권장 — FinOps 핵심 탭 (예시)**  
+![](images/2026-07-19-23-29-00.png)   
+  
+![](images/2026-07-19-23-25-13.png)  
+  
 | Impact | Description | Potential yearly savings | Impacted |
 |---|---|---|---|
 | High | Consider **virtual machine reserved instance** to save over your on-demand costs | 146 USD | 1 Subscription |
@@ -315,9 +318,14 @@
   → **리포트 §14(3년)·§15(1년) 예약 권장의 포털 네이티브 대응물**.
 - 예시 권장은 전부 **RI(예약) 구매형**이며 절감액은 **정가(retail) 기준 추정** → 실제 계약가와 다를 수 있음.
 
+
 **(c) 비용 외 기둥 탭 (참고)**
-- Reliability(예시 6건): "Use Azure Disks with **ZRS**", "VM 이미지 지원종료 예정", "**Availability zones** 사용" 등 → 가용성.
+- Reliability(예시 6건): "Use Azure Disks with **ZRS**", "VM 이미지 지원종료 예정", "**Availability zones** 사용" 등 → 가용성.      
+  ![](images/2026-07-19-23-26-38.png)    
+    
 - Operational excellence(예시 1건): "Switch to **Azure Monitor** based alerts for backup" → 운영 품질.
+  ![](images/2026-07-19-23-26-58.png)   
+    
 - 주의: 이들은 절감이 아니라 **안정성·운영** 권장이며, ZRS·가용성 존은 **오히려 비용을 늘릴 수 있음**(이중화) → FinOps는 Cost 탭 우선, 타 기둥은 비용 영향까지 함께 판단.
 
 **(d) 라이브 환경 적용 주의**
@@ -356,10 +364,10 @@
 > 아래 7개 드릴다운(D1~D7)은 그룹화 단계에서 나온 가설을 **검증·교정**함.
 
 ### D1 — 미태깅 ₩3.29M의 범인 식별
-**액션:** 그룹화=Resource group name · 세분성=없음 · **필터: Tag `project` = 태그 없음** (154행, 필터 후 합 ₩3.3M)
+**액션:** 그룹화=Resource group name · 세분성=없음 · 테이블 · **필터: Tag `project` = 태그 없음** (154행, 필터 후 합 ₩3.3M)
 
-![D1 미태깅 범인(RG)](images/D1.untagged-by-rg.png)
-
+![](images/2026-07-19-23-31-59.png)  
+  
 | 미태깅 RG | 금액 | 성격 |
 |---|---|---|
 | **00_ai_rg** | ₩1,180,871.81 | 공유 AI 인프라 — 미태깅의 **36%** |
@@ -375,7 +383,7 @@
 ### D2 — ML 원가동인(₩5.0M)의 프로젝트 귀속 *(← 포인트6 가설 교정)*
 **액션:** **필터: Resource type = machinelearningservices/workspaces** · 그룹화=Tag `project` · 세분성=없음 (10행, 필터 후 합 ₩5.0M)
 
-![D2 ML 컴퓨트의 프로젝트 귀속](images/D2.ml-by-project.png)
+![](images/2026-07-19-23-33-35.png)
 
 | project | ML 컴퓨트 | 비중(ML 내) |
 |---|---|---|
@@ -394,9 +402,8 @@
   포인트6의 lc-2509 총액(₩2,687,011)과 대조 → **lc-2509는 ~99.5%가 ML 학습 컴퓨트** → 최적화 1순위 타깃 확정.
 
 ### D3 — 11월 급증(APIM ₩340K) 격리
-**액션:** **필터: Service name = API Management** · 그룹화=Resource group name (1행, 필터 후 합 ₩340.5K)
-
-![D3 APIM의 RG 격리](images/D3.apim-by-rg.png)
+**액션:** **필터: Service name = API Management** · 그룹화=Resource group name (1행, 필터 후 합 ₩340.5K)  
+![](images/2026-07-19-23-34-29.png)
 
 | RG | APIM 비용 |
 |---|---|
@@ -408,7 +415,7 @@
 ### D4 — 공유 플랫폼 `00_ai_rg` 내부 구성
 **액션:** **필터: Resource group name = 00_ai_rg** · 그룹화=Service name · 세분성=없음 (17행, 필터 후 합 ₩1.2M)
 
-![D4 00_ai_rg 서비스 구성](images/D4.00ai-rg-composition.png)
+![](images/2026-07-19-23-35-26.png)
 
 | 서비스 | 금액 | 비중(RG 내) |
 |---|---|---|
@@ -426,7 +433,7 @@
 ### D5 — `lc-2509` 프로파일 (타이밍: 이미 종료됨)
 **액션:** **필터: Tag `project` = lc-2509** · 그룹화=None · 세분성=월별 (5행, 필터 후 합 ₩2.7M)
 
-![D5 lc-2509 월별 타임라인](images/D5.lc2509-monthly.png)
+![](images/2026-07-19-23-36-26.png)  
 
 | 월 | 비용 |
 |---|---|
@@ -446,7 +453,9 @@
 ### D6 — 고아 리소스 검증 (disks · public IP, 월별)
 **액션:** 필터: Resource type = compute/disks → network/publicipaddresses · 그룹화=None · 세분성=월별 (각 1행)
 
-![D6 고아 리소스 월별](images/D6.orphan-check-monthly.png)
+![](images/2026-07-19-23-38-08.png)
+   
+![](images/2026-07-19-23-38-36.png)  
 
 | 리소스 유형 | 발생 월 | 금액 | 최근월(2026-04~06) |
 |---|---|---|---|
@@ -460,7 +469,7 @@
 ### D7 — 차기 코호트 `pr-2511` 상태 (naming ≠ 실제 소비월)
 **액션:** 필터: Tag `project` = pr-2511 · 그룹화=None · 세분성=월별 (3행, 필터 후 합 ₩269.3K)
 
-![D7 pr-2511 월별](images/D7.pr2511-monthly.png)
+![](images/2026-07-19-23-39-21.png)   
 
 | 월 | 비용 |
 |---|---|
