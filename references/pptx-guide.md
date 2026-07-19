@@ -93,6 +93,7 @@
 | 요소 | 서체 | 굵기 | 크기 | 색상 |
 |------|------|------|------|------|
 | 페이지 제목 | **Pretendard** | ExtraBold(800) | 40pt | `#1E2A5C` |
+| **거버넌스 메시지(리드)** | **Pretendard** | **Bold** | **20pt** | `#2B3242` |
 | 섹션 헤더 바 텍스트 | **Pretendard** | Bold | 20pt | `#FFFFFF` |
 | 섹션 헤더(본문) | **Pretendard** | Bold | 28pt | `#1E2A5C` |
 | breadcrumb (경로) | **Pretendard** | SemiBold | 13pt | `#7C8598` |
@@ -122,11 +123,17 @@
 #### 페이지 헤더 구조 (모든 콘텐츠 슬라이드 공통)
 
 ```
-① breadcrumb    : "Ⅰ. 디자인 시스템 › 2. 컬러"   (13pt, #7C8598)
-② 페이지 제목    : "컬러 시스템"                  (40pt Bold, #1E2A5C)
-③ 언더라인 룰    : 전폭 3pt #D9E0EC 위에 좌측 150px #2E74C6 액센트 세그먼트
-④ (선택) 리드문  : 한 문장 요약                   (16pt, #4A5364)
+① breadcrumb        : "Ⅰ. 디자인 시스템 › 2. 컬러"   (13pt, #7C8598)
+② 페이지 제목        : "컬러 시스템"                  (40pt Bold, #1E2A5C)
+③ 언더라인 룰        : 전폭 3pt #D9E0EC 위에 좌측 150px #2E74C6 액센트 세그먼트
+④ 거버넌스 메시지(필수): 슬라이드 핵심 주장 한 문장     (20pt Bold, #2B3242) — 누락 금지
 ```
+
+> **거버넌스 메시지(Governing Message)란** — 슬라이드가 전달하려는 **핵심 주장·결론을 한 문장**으로 압축한 리드 문구임.
+> 제목 바로 아래(언더라인 룰 하단)에 배치하며, **모든 콘텐츠 슬라이드에 반드시 1개** 둠(표지·목차·섹션 구분 슬라이드는 예외).
+> - 스타일: **20pt · Bold · `#2B3242`(Ink)** — 제목(40pt)보다 작고 본문(14~16pt)보다 큼(위계 확보)
+> - 작성: 명사·주장형 한 문장(예: "합치지 말 것 — 정산은 청구 계층, 분류는 태그로 분리"). 단순 소제목·명사구 나열 금지
+> - **누락 금지**: 빌더는 헤더 헬퍼에서 거버넌스 메시지 인자가 없으면 **빌드를 실패**시켜 강제함(6-5 참조)
 
 #### 레이아웃 패턴
 
@@ -241,6 +248,8 @@
 - 콘텐츠는 반드시 **흰색 배경** 위, 좌우 40pt 여백 안에 배치
 - 페이지 제목은 `#1E2A5C` ExtraBold 40pt로 좌측 상단에 배치하고 언더라인 룰을 둠
 - breadcrumb(경로)는 제목 위 13pt `#7C8598`로 표기
+- **거버넌스 메시지(핵심 주장 한 문장)를 제목 아래에 `20pt Bold #2B3242`로 모든 콘텐츠 슬라이드에 반드시 배치 — 누락 금지**
+  (표지·목차·섹션 구분 슬라이드는 예외. 빌드 코드에서 인자 누락 시 실패 처리로 강제)
 - 본문 텍스트 최소 크기 **14pt** — 14pt 미만이 필요할 정도면 슬라이드를 분리할 것
 - 하단 여백이 **1.0인치 이상** 남으면 표·카드의 글자/행 높이를 키워 균형있게 채울 것
 - 헤더 바·배지·박스는 **지정 팔레트 내 컬러**만 사용
@@ -327,14 +336,20 @@ function numBadge(slide, { x, y, n, color = C.blue, size = 0.4 }) {
 }
 ```
 
-#### 6-5. 페이지 헤더(제목 + 언더라인) 헬퍼
+#### 6-5. 페이지 헤더(제목 + 언더라인 + 거버넌스 메시지) 헬퍼
+
+**규칙**: `govMsg`(거버넌스 메시지)는 **필수 인자**임. 누락 시 빌드를 실패시켜 **모든 콘텐츠 슬라이드에 강제**함.
+breadcrumb은 13pt 고정(예외)이므로 `fs14()`를 경유하지 않고 직접 지정함.
 
 ```javascript
-function pageHeader(slide, { crumb, title }) {
-  slide.addText(crumb, { x: 0.55, y: 0.45, w: 14, h: 0.3, color: C.sub, fontSize: fs14(13), fontFace: FONT });
-  slide.addText(title, { x: 0.55, y: 0.72, w: 14, h: 0.7, color: C.navy, bold: true, fontSize: fs14(40), fontFace: FONT });
+function pageHeader(slide, { crumb, title, govMsg }) {
+  slide.addText(crumb, { x: 0.55, y: 0.45, w: 14, h: 0.3, color: C.sub, fontSize: 13, fontFace: FONT });
+  slide.addText(title, { x: 0.55, y: 0.72, w: 14.9, h: 0.7, color: C.navy, bold: true, fontSize: fs14(40), fontFace: FONT });
   slide.addShape(pptx.shapes.RECTANGLE, { x: 0.55, y: 1.55, w: 14.9, h: 0.04, fill: { color: C.border }, line: { type: "none" } });
   slide.addShape(pptx.shapes.RECTANGLE, { x: 0.55, y: 1.55, w: 2.1,  h: 0.04, fill: { color: C.blue },   line: { type: "none" } });
+  // 거버넌스 메시지 (필수·20pt Bold·누락 금지)
+  if (!govMsg) throw new Error("거버넌스 메시지(govMsg) 필수! 모든 콘텐츠 슬라이드에 핵심 주장 한 문장을 배치할 것");
+  slide.addText(govMsg, { x: 0.55, y: 1.62, w: 14.9, h: 0.4, color: C.ink, bold: true, fontSize: fs14(20), fontFace: FONT });
 }
 ```
 
