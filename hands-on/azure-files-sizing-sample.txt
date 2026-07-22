@@ -1,0 +1,2 @@
+Azure Files quota resize validation sample
+Created for the 64 GiB -> 128 GiB -> 64 GiB hands-on lab.
