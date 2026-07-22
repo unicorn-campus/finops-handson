@@ -1,0 +1,1 @@
+FinOps Blob Tiering lab sample for the Cool access tier.
