@@ -14,7 +14,8 @@ Cost Analysis(`cost-dashboard-analyze.md` 3.8 고아 리소스 검증 / 액션 I
 | **미연결 관리 디스크** 찾기 — `managedBy` 비어있음 + `diskState=Unattached`, `diskSizeGB` 내림차순 | 미연결이어도 프로비저닝 GB당 과금(Premium SSD 특히 큼) |
 | **미할당 공인 IP** 찾기 — `ipConfiguration`·`natGateway` 연결 없음 | Standard static IP는 미할당 상태에서도 시간당 과금, 다수 누적 |
 | **서브넷 미연결 NAT Gateway** 찾기 — `subnets` 없음 | 시간당 + 데이터 처리 과금, 유휴 시 순손실 |
-| **유휴 Application/VPN Gateway** 찾기 — 백엔드·연결 트래픽 0 | 시간당 고정비 큼(의도적 대기일 수 있어 확인 필요) |
+| **유휴 Application Gateway** 찾기 — 백엔드 풀에 연결된 백엔드 주소 0개 | 시간당 고정비 큼(의도적 대기일 수 있어 확인 필요) |
+| **유휴 VPN Gateway** 찾기 — 연결(connections) 0개 | 시간당 고정비 큼(의도적 대기일 수 있어 확인 필요) |
 | **백엔드 없는 Standard Load Balancer** 찾기 — `backendAddressPools` 비어있음 | 규칙당 과금, 백엔드 0이면 순손실 |
 | **앱 0개 App Service Plan** 찾기 — `numberOfSites=0` | 앱이 없어도 플랜 티어별 과금 지속 |
 | **고아 디스크 스냅샷** 찾기 — 생성 90일 초과 또는 원본 디스크 삭제 | 스토리지 과금 누적, 장기 방치 |
@@ -22,6 +23,10 @@ Cost Analysis(`cost-dashboard-analyze.md` 3.8 고아 리소스 검증 / 액션 I
 | **미연결 NIC** 찾기 — `virtualMachine`·`privateEndpoint` 없음 | 자체 비용 0(고아 지표·정리 위생) |
 
 > `{스냅샷보존일}` 변수(기본 **90일**)는 조직 백업 정책에 맞춰 조정함. 티어 예: `>90일` 검토 후보 · `>180일` 강한 회수 후보 · `>365일` 삭제 후보.
+
+> **Application Gateway·VPN Gateway 행 분리 사유** — 두 리소스 유형은 판정 지표(백엔드 주소 수 vs 연결 수)가 서로 달라
+> 하나의 Query 열 값으로 합쳐 Copilot에 전달하면 `join`·`union`이 섞인 과도하게 복잡한 KQL이 생성되어 구문 오류(파이프 누락 등)
+> 발생 가능성이 높음. 리소스 유형별로 행을 분리해 각각 단순한 Copilot 초안이 생성되도록 함.
 
 > **VM 낭비 추가 패턴** — (1) **장기 Deallocated(좀비) VM**(`PowerState/deallocated`): 컴퓨팅 과금은 0이나
 > **연결 디스크·공인 IP가 계속 과금** → 위 디스크·IP 행과 교차 확인. (2) **유휴 실행 VM(저사용률)**: 사용률 메트릭이

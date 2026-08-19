@@ -12,3 +12,6 @@ admin/dataset-examples/EA-Prices.csv
 # OS 생성 파일
 .DS_Store
 Thumbs.db
+
+# Playwright MCP 브라우저 자동화 캐시/로그
+.playwright-mcp/
