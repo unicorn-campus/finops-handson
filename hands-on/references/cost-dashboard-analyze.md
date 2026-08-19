@@ -174,10 +174,10 @@
 | **S1 약정 미적용** | 2.7 Pricing Model | `Pricing Model=OnDemand` → Service별 | steady-state 서비스의 **약정(RI/SP) 여지** | 3.1 · 2.9 Advisor |
 | **S2 dev/test 상시가동** | 2.6 Tag(env) | `env=dev·staging` → 일별 | **야간·주말 과금 지속**(스케줄링 여지) | 3.2 |
 | **S3 종료 프로젝트 잔존** | 2.6 Tag(project) | `Tag(project)=특정 코드` → 월별 | **최근월 잔존(좀비) 과금** 여부 | 3.3 |
-| **S4 스토리지 계층 미적용** | 2.4 Resource type | `Resource type=Storage/Disk` | Hot 편중·대용량(계층화 여지, **접근 메트릭 병행**) | 3.4 |
-| **S5 스냅샷·백업 과다** | 2.4 Resource type | `Resource type=Snapshot` → 월별 | **장기 방치 스냅샷** 누적(ARG 발굴 병행) | 3.5 · 3.8(S8) |
+| **S4 스토리지 계층 미적용** | 2.4 Resource type | `Resource type=microsoft.storage/*, microsoft.compute/disks` | Hot 편중·대용량(계층화 여지, **접근 메트릭 병행**) | 3.4 |
+| **S5 스냅샷·백업 과다** | 2.4 Resource type | `Resource type=microsoft.compute/snapshots` → 월별 | **장기 방치 스냅샷** 누적(ARG 발굴 병행) | 3.5 · 3.8(S8) |
 | **S6 리전 스프롤** | 2.5 Location | 소액 다수 리전 격리 | **거버넌스 오버헤드·통합** 여지 | 3.6 |
-| **S7 데이터 전송(egress)** | 2.2 Service name | `Meter=Data Transfer` | **egress 유발 서비스**(메터 상세 병행) | 3.7 |
+| **S7 데이터 전송(egress)** | 2.2 Service name | `Meter category=Bandwidth` → Resource type | **egress 유발 리소스 유형**(메터 상세 병행) | 3.7 |
 
 **② 배분 전제 그룹 — Inform(절감 전 귀속·가시성 확보, 절감액 아닌 커버리지로 판단)**
 
@@ -362,19 +362,26 @@ Azure Advisor의 **비용 권장**을 읽어 자동 발굴된 최적화 후보(�
 **규명 대상 · FinOps: Workload Optimization**  
 스토리지·디스크 유형의 비용 규모를 격리해 계층화(Hot→Cool/Archive, Premium→Standard) 후보를 발굴함.
 
-**수행:** 필터=Resource type = Microsoft.Storage/* 또는 Disks · 그룹화 방법=Resource type(또는 Meter) · 세분성=없음(누적) · 차트=테이블
+**수행:** 필터=Resource type = microsoft.storage/*, microsoft.compute/disks · 그룹화 방법=**Meter**(Resource type 아님) · 세분성=없음(누적) · 차트=테이블
 
-**읽는 팁:** Hot/Premium 티어에 큰 금액이 몰리면 계층화 후보. 대용량 상위 계정·디스크를 식별함.  
-**주의:** **계층 판정은 접근 빈도가 필요** → Cost Analysis는 규모 발굴까지, 실제 계층 결정은 **Storage Insights·Blob 접근 메트릭·수명주기 정책**으로 검증함. Cool/Archive 조기 삭제 위약금 확인.
+**읽는 팁:** **Resource type 그룹화는 티어를 드러내지 않음**(ARM 리소스 타입에는 Hot/Cool/Premium 구분이 없음) → 반드시 **Meter로 그룹화**해야 티어가 미터명에 노출됨.  
+미터명 판독: Managed Disk는 `P4/P30 LRS Disk`(Premium SSD)·`E10 LRS Disk`(Standard SSD)·`S4 LRS Disk`(Standard HDD), Blob은 `Hot/Cool/Archive LRS Data Stored`로 표기됨. Hot/Premium 미터에 큰 금액이 몰리면 계층화 후보. 대용량 상위 계정·디스크를 식별함.  
+**주의:** **계층 판정은 접근 빈도가 필요** → Cost Analysis는 규모 발굴까지, 실제 계층 결정은 **Storage Insights·Blob 접근 메트릭·수명주기 정책**으로 검증함. Cool/Archive 조기 삭제 위약금 확인.  
+**주의(필터 값 누락 오판 금지):** Resource type 필터의 값 목록은 **현재 선택된 기간에 비용이 발생한 값만** 노출함 — 리소스가 실재해도  
+좁은 기간(예: 이번 달)에 비용이 0이면 드롭다운에 안 뜸. `microsoft.storage/storageaccounts`가 안 보인다고 "Storage Account가  
+없다"고 단정하지 말 것 → **기간을 넓혀(예: 지난 30 ~ 90일) 재확인**한 뒤에만 부재를 결론지음.
 
 #### 3.5 스냅샷·백업 보존 과다 (S5)
 
 **규명 대상 · FinOps: Workload Optimization**  
 장기 방치 스냅샷·백업의 **누적 과금**을 확인해 보존정책 초과분 회수 대상을 판정함.
 
-**수행:** 필터=Resource type = Snapshots(또는 Backup) · 그룹화 방법=None · 세분성=월별 · 차트=테이블
+**수행:** 필터=Resource type = `microsoft.compute/snapshots`(디스크 스냅샷) 또는 `microsoft.recoveryservices/vaults`(백업 볼트) · 그룹화 방법=None · 세분성=월별 · 차트=테이블
 
 **읽는 팁:** 월별로 계속 증가하면 보존정책 없이 누적 중. 감소 없이 우상향이면 정리 대상.  
+**주의:** 필터 드롭다운에 "Snapshot"·"Backup" 같은 사람이 읽는 이름으로 검색하면 안 나옴 — **실제 ARM 리소스 타입 문자열**  
+(`microsoft.compute/snapshots`, `microsoft.recoveryservices/vaults`)로 검색해야 함. 그래도 값이 안 보이면 해당 기간에 스냅샷·  
+백업 비용이 없다는 뜻일 수 있으니 **기간을 넓혀 재확인**(4.4 필터 값 목록의 기간 의존성 참고).  
 **주의:** **연결 상태·생성일은 Cost Analysis에 없음** → 고아(원본 삭제)·장기(>보존일) 스냅샷 **발굴은 ARG**로 수행함(고아 리소스 3.8/S8·[resource-graph-explore.md](resource-graph-explore.md)). 여기선 **월별 지속 과금 규모만** 확인함.
 
 #### 3.6 리전 스프롤 (S6)
@@ -392,9 +399,11 @@ Azure Advisor의 **비용 권장**을 읽어 자동 발굴된 최적화 후보(�
 **규명 대상 · FinOps: Workload Optimization**  
 데이터 전송(egress) 과금을 격리해 유발 서비스·구조(크로스리전·인터넷 아웃바운드)를 규명함.
 
-**수행:** 필터=Meter category(또는 Meter) = Data Transfer/Bandwidth · 그룹화 방법=Service name · 세분성=월별 · 차트=테이블
+**수행:** 필터=Meter category = `Bandwidth` · 그룹화 방법=**Resource type**(Service name 아님) · 세분성=월별 · 차트=테이블
 
-**읽는 팁:** egress 상위 서비스가 **크로스리전·CDN 미적용·중복 복제**인지 확인. 월별 추세로 급증 여부 파악.  
+**읽는 팁:** egress 상위 리소스 유형(예: VM·Load Balancer·VPN Gateway·CDN)이 **크로스리전·CDN 미적용·중복 복제**인지 확인. 월별 추세로 급증 여부 파악.  
+**주의:** **Service name으로 그룹화하면 안 됨** — Azure는 대역폭 과금을 원인 리소스의 서비스명이 아니라 **별도 가상 서비스명 "Bandwidth"** 로 일괄 귀속함. 이미 `Meter category=Bandwidth`로 필터링한 상태에서 Service name으로 다시 그룹화하면 결과가 **"Bandwidth" 단일 값**으로만 나와(동어반복) 어떤 리소스가 유발했는지 전혀 드러나지 않음(실측: Service name 그룹화 시 100% "Bandwidth" 하나, 반면 Resource group name 그룹화 시엔 여러 RG로 분산됨을 확인). **Resource type**으로 그룹화해야 실제 유발 리소스 유형이 드러남.  
+**주의:** **"Data Transfer"는 실제 Meter category 값이 아님** — 실 검색 시 "항목을 찾을 수 없습니다"로 나옴. Azure의 실제 값은 **`Bandwidth`** 하나뿐이며, 개별 방향·경로(리전 간·인터넷 아웃바운드 등)는 `Meter`(미터명, 예: `Data Transfer Out (지역명)`) 축으로 더 세분화함.  
 **주의:** **전송비는 메터 레벨 상세가 필요** → Cost Analysis 메터 필터로 규모는 보이나 **목적지·경로 attribution은 제한적**. 상세는 네트워크 모니터링·NSG 흐름 로그 병행.
 
 #### 3.8 고아 리소스 검증 (S8)
@@ -448,12 +457,17 @@ Azure Advisor의 **비용 권장**을 읽어 자동 발굴된 최적화 후보(�
 **규명 대상 · FinOps: Allocation**  
 최대 원가동인(가장 비싼 리소스 유형)을 **어느 프로젝트·어느 상시 서비스가 얼마나 소비하는지** 2축으로 귀속해 최적화 1순위 타깃을 확정함.
 
-**수행 (2축 교차):** 공통 필터=Resource type = (최대 유형) · 세분성=없음(누적) · 차트=테이블  
-1. **프로젝트 축**: 그룹화 방법=Tag(`project` 키) → 기간 한정 과제별 귀속.  
-2. **워크로드 축**: 그룹화 방법=Tag(`workload` 키) → 상시 서비스별 귀속.
+**왜 두 축으로 나눠 보나:** `project`(기간이 정해진 과제)와 `workload`(계속 운영되는 서비스)는 소비 주체의 성격이 다름.  
+한 축만 보면 다음 두 경우를 구분할 수 없음 — (a) 실제로 특정 **프로젝트**가 원가동인을 쓰는 경우와 (b) **상시 서비스**가 쓰는데 원래 `project` 태그 대상이 아니라서 그냥 "미태깅"으로만 보이는 경우.  
+같은 리소스 유형을 `project` 축과 `workload` 축 양쪽으로 각각 그룹화해 대조하면 이 두 경우를 가려낼 수 있음.
 
-**읽는 팁:** 두 축을 교차해야 원가동인 주체를 놓치지 않음 — `project` 축에서 **"태그 없음" 비중이 크면** 원가동인이 기간 한정 과제가 아니라 **상시 서비스**일 가능성이 높으므로 `workload` 축으로 재귀속함. 각 축에서 단일 값이 원가동인을 지배하는지, 태깅률도 함께 읽음.  
-**주의:** `project` 단일 축만 보면 **상시 서비스가 실주체인 원가동인을 미태깅으로 오판**할 수 있음. 그룹화 단계의 가설("미태깅 = 특정 워크로드일 것")은 필터로 **반증될 수 있음** → 가설 교정이 이 단계의 핵심 가치임.
+**수행 (선행 조회 + 2축 교차, 3단계):**  
+0. **선행 조회(전체 순위부터 확인)**: 필터 없음 · 그룹화 방법=Tag(`project` 키), Tag(`workload` 키) 각각 · 세분성=없음(누적) · 차트=테이블 → 리소스 유형으로 좁히기 전에 **전체 범위에서 어느 프로젝트·어느 워크로드가 비용을 가장 많이 쓰는지** 순위를 먼저 파악함.  
+1. **프로젝트 축(원가동인 교차)**: 필터=Resource type = (최대 유형) · 그룹화 방법=Tag(`project` 키) → 0번의 상위 프로젝트가 이 원가동인에서도 상위인지 대조해 **기간 한정 과제별 귀속**을 확정.  
+2. **워크로드 축(원가동인 교차)**: 필터=Resource type = (최대 유형) · 그룹화 방법=Tag(`workload` 키) → 0번의 상위 워크로드가 이 원가동인에서도 상위인지 대조해 **상시 서비스별 귀속**을 확정.
+
+**읽는 팁:** 두 축을 교차해야 원가동인 주체를 놓치지 않음 — `project` 축에서 **"태그 없음" 비중이 크면** 원가동인이 기간 한정 과제가 아니라 **상시 서비스**일 가능성이 높으므로, `workload` 축으로 관점을 바꿔 다시 확인함. 0번 선행 조회의 순위와 1·2번 교차 결과가 서로 맞는지도 함께 봄.  
+**쉽게 말하면(주의):** `project` 축 하나만 보고 끝내면 잘못 판단하기 쉬움. 예를 들어 실제로는 상시 서비스가 이 비용을 쓰고 있는데, 그 서비스에는 원래 `project` 태그를 붙이지 않으니 "태그 없음"으로만 보이고, 이를 그냥 "관리가 안 된 비용(미태깅)"이라고 오해할 수 있음. 이럴 때는 반드시 `workload` 축도 같이 확인해서 "이게 진짜 미태깅인지, 아니면 원래 `project` 태그가 필요 없는 상시 서비스인지"를 가려내야 함. 처음 세운 추측("미태깅 = 특정 워크로드일 것")이 맞는지 직접 확인하는 과정이 이 단계에서 가장 중요함.
 
 ### 추세 분석
 **그룹 ③ 추세 신호 — Inform (절감액 아닌 긴급도 — 언제 개입할지)**
@@ -537,15 +551,15 @@ Azure Advisor의 **비용 권장**을 읽어 자동 발굴된 최적화 후보(�
 | S1 | 약정(RI/SP) 전환 여지는? | Service name | Pricing Model=OnDemand | 월별 | 테이블 | steady-state 온디맨드 상위(+2.9 Advisor) |
 | S2 | dev/test 야간·주말 상시 가동인가? | Resource type | Tag(env)=dev·staging | 일별(피크월) | 세로 막대형(누적) | 비운영 시간대 과금 지속 |
 | S3 | 종료 프로젝트 잔존 과금·타이밍은? | None | Tag(project)=특정 프로젝트 | 월별 | 세로 막대형(누적) | 최근월 과금 지속(잔존)·소비 집중월 |
-| S4 | 스토리지 계층화 규모는? | Resource type(Meter) | Resource type=Storage/Disk | 없음 | 테이블 | Hot/Premium 대용량(+접근 메트릭) |
-| S5 | 스냅샷·백업 누적 과금은? | None | Resource type=Snapshot | 월별 | 테이블 | 월별 지속 증가(+ARG 발굴) |
+| S4 | 스토리지 계층화 규모는? | Meter | Resource type=microsoft.storage/*, microsoft.compute/disks | 없음 | 테이블 | 미터명의 Hot/Premium 대용량(+접근 메트릭) |
+| S5 | 스냅샷·백업 누적 과금은? | None | Resource type=microsoft.compute/snapshots(또는 microsoft.recoveryservices/vaults) | 월별 | 테이블 | 월별 지속 증가(+ARG 발굴) |
 | S6 | 리전 스프롤·통합 여지는? | Location | (주력 외 소액 리전 격리) | 없음 | 테이블 | 주력 외 소액 리전 다수 |
-| S7 | egress 유발 서비스는? | Service name | Meter=Data Transfer | 월별 | 테이블 | 전송비 상위 서비스(+네트워크 로그) |
+| S7 | egress 유발 리소스는? | Resource type | Meter category=Bandwidth | 월별 | 테이블 | 전송비 상위 리소스 유형(+네트워크 로그) |
 | S8 | 고아(ARG 발굴) 지속 과금인가? | None | Resource type=ARG 발굴 고아 후보 | 월별 | 테이블 | 최근월 과금 지속 여부 |
 | **드릴다운 ② 배분 전제** | *절감 전 귀속·가시성 확보* |  |  |  |  |  |
 | A1 | 미태깅 범인 RG는? | Resource group name | Tag=태그 없음 | 없음 | 테이블 | 미태깅 최대 RG |
 | A2 | 공유 RG 내부 구성은? | Service name | Resource group name=공유 RG(태깅 전: A1 미태깅 최대 RG / 태깅 후: CostCenter=Shared) | 없음 | 테이블 | 공유 서비스 구성비 |
-| A3 | 원가동인의 프로젝트·워크로드 귀속은? | Tag(project) → Tag(workload) | Resource type=최대 유형 | 없음 | 테이블 | 프로젝트·워크로드별 비중·태깅률 |
+| A3 | 원가동인의 프로젝트·워크로드 귀속은? | (선행) Tag(project)·Tag(workload) 전체 순위 → (교차) 동일 축 | (교차 시) Resource type=최대 유형 | 없음 | 테이블 | 프로젝트·워크로드별 비중·태깅률 |
 | **드릴다운 ③ 추세 신호** | *긴급도(언제 개입할지)* |  |  |  |  |  |
 | T1 | 예산 소진율·번레이트는? | None | (예산·Forecast 대조) | 월별 | 세로 막대형(누적) | 초과 예상월·소진 속도 |
 | T2 | MoM 증가율 높은 서비스는? | Service name | — | 월별 | 세로 막대형(그룹화) | 3개월+ 연속 상승 서비스 |
@@ -571,7 +585,10 @@ Azure Advisor의 **비용 권장**을 읽어 자동 발굴된 최적화 후보(�
 - **약정 무비판 수용**: 간헐적 소비에 RI/SP는 낭비 위험 → 소비 패턴(2.1) 근거로 재판단.  
 - **명칭·태그값에 타이밍 인코딩**: `project` 태그값은 코드/ID만 담고, 시작/종료일은 CMDB로 관리함. 명칭에 박은 연월(YYMM)은 안티패턴 → 실제 과금월(월별)과 CMDB 일정을 대조해 검증(3.3).  
 - **필터 후 분모 혼동**: 필터 부분집합 비중인지 전체 비중인지 명시(3.15).  
-- **이미 종료된 대상 최적화**: 최근월 0인 프로젝트는 지금 조치해도 절감 0 → 활성·차기 대상에 선제 적용.
+- **이미 종료된 대상 최적화**: 최근월 0인 프로젝트는 지금 조치해도 절감 0 → 활성·차기 대상에 선제 적용.  
+- **필터 값 목록의 기간 의존성 오판**: Resource type·Meter 등 필터의 값 목록은 **선택된 기간에 비용이 발생한 값만** 노출됨.  
+  리소스가 실재해도 좁은 기간에 비용이 0이면 목록에 안 뜸 → 값이 안 보인다고 "해당 리소스 없음"으로 단정 말고  
+  **기간을 넓혀(지난 30 ~ 90일 등) 재확인**한 뒤에만 부재를 결론지음(3.4 실제 사례로 검증됨).
 
 ### 4.5 Inform → Optimize 브릿지
 
